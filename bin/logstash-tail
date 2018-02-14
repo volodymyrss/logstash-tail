@@ -1,5 +1,6 @@
-#!/usr/bin/env python
+#!/home/isdc/savchenk/.pyenv/versions/2.7.12/bin/python2.7
 
+from collections import defaultdict
 import argparse
 import json
 import logging
@@ -100,7 +101,7 @@ parser.add_argument("--filter",
                     help="Define some filters (multiple accepted; default is to `OR' them")
 parser.add_argument("--format",
                     dest="fmt",
-                    default="%(@timestamp)s %(@source_host)s: %(@message)s",
+                    default="%(@timestamp)s: %(message)s",
                     help="Output format (see README for default)")
 args = parser.parse_args()
 
@@ -129,13 +130,18 @@ try:
 
                     fields = dict(to_path(parsed))
 
+                    class DataDict(dict):
+                        def __missing__(self, key):
+                            return ''
+
                     if args.filters:
                         highlighted = matched(args.filters, fields, args.andd,
                                               args.color)
                         if highlighted:
                             print args.fmt % highlighted
                     else:
-                        print args.fmt % fields
+                        print args.fmt % DataDict(fields)
+                    line=""
 except KeyboardInterrupt:
     logging.warning("Disconnecting...")
     sys.exit(0)
